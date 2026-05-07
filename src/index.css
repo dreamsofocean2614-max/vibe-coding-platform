@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  
+  --color-leaf-50: #F7FAF7;
+  --color-leaf-100: #F0F4F0;
+  --color-leaf-200: #E9F0E9;
+  --color-leaf-300: #DDE7DD;
+  --color-leaf-400: #A8D5BA;
+  --color-leaf-500: #8A9B8A;
+  --color-leaf-600: #6B7D6B;
+  --color-leaf-700: #5C705C;
+  --color-leaf-800: #4A7C59;
+  --color-leaf-900: #2D3A2D;
+  --color-leaf-950: #2D5A27;
+}
+
+body {
+  @apply bg-leaf-50 dark:bg-[#0f1712] text-leaf-900 dark:text-leaf-100 font-sans transition-colors duration-300;
+}
