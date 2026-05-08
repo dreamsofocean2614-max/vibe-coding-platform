@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: var(--font-sans), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-serif), "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  
+  --color-primary: var(--primary-color);
+  --color-secondary: var(--secondary-color);
+  
+  --color-leaf-50: var(--leaf-50);
+  --color-leaf-100: var(--leaf-100);
+  --color-leaf-200: var(--leaf-200);
+  --color-leaf-300: var(--leaf-300);
+  --color-leaf-400: var(--leaf-400);
+  --color-leaf-500: var(--leaf-500);
+  --color-leaf-600: var(--leaf-600);
+  --color-leaf-700: var(--leaf-700);
+  --color-leaf-800: var(--leaf-800);
+  --color-leaf-900: var(--leaf-900);
+  --color-leaf-950: var(--leaf-950);
+}
+
+:root {
+  /* Chế độ sáng: Tông hồng/vàng pastel */
+  --leaf-50: #fff5f8;
+  --leaf-100: #ffe6ee;
+  --leaf-200: #ffcce0;
+  --leaf-300: #ffa3c7;
+  --leaf-400: #ff6ba3;
+  --leaf-500: #f53d82;
+  --leaf-600: #d91c60;
+  --leaf-700: #b30f48;
+  --leaf-800: #94103e;
+  --leaf-900: #7e1238;
+  --leaf-950: #4a051d;
+  
+  --app-bg: #fff5f8;
+}
+
+.dark {
+  /* Chế độ tối: Tông xanh dương đậm */
+  --leaf-50: #f0f8ff;
+  --leaf-100: #122138;
+  --leaf-200: #1a2f4c;
+  --leaf-300: #2a476e;
+  --leaf-400: #3a608d;
+  --leaf-500: #0d8df0;
+  --leaf-600: #016ece;
+  --leaf-700: #0257a5;
+  --leaf-800: #054988;
+  --leaf-900: #0a2d52;
+  --leaf-950: #061933;
+  
+  --app-bg: radial-gradient(at 0% 0%, hsla(217, 85%, 25%, 0.8) 0, transparent 60%), 
+            radial-gradient(at 100% 0%, hsla(260, 50%, 20%, 0.7) 0, transparent 60%), 
+            radial-gradient(at 100% 100%, hsla(220, 90%, 15%, 0.8) 0, transparent 60%), 
+            radial-gradient(at 0% 100%, hsla(210, 100%, 15%, 0.7) 0, transparent 60%), 
+            #061121;
+}
+
+body {
+  @apply text-leaf-900 dark:text-leaf-100 font-sans transition-colors duration-300;
+  background: var(--app-bg);
+  background-attachment: fixed;
+  min-height: 100vh;
+  /* Anti-copy: Broad protection */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none; /* iOS Safari */
+}
+
+/* Allow selection in specific areas if needed */
+.allow-select, input, textarea, [contenteditable="true"] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* Anti-screenshot: Print protection */
+@media print {
+  body {
+    display: none !important;
+  }
+}
+
+.dark body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='0.05' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  z-index: 9999;
+  opacity: 0.6;
+  mix-blend-mode: overlay;
+}
