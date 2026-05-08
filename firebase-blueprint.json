@@ -1,0 +1,227 @@
+{
+  "entities": {
+    "SiteSettings": {
+      "title": "Site Settings",
+      "description": "General site configuration and theme customization",
+      "type": "object",
+      "properties": {
+        "facebookLink": { "type": "string" },
+        "tiktokLink": { "type": "string" },
+        "youtubeLink": { "type": "string" },
+        "gmailAddress": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "logoSize": { "type": "number", "description": "Logo height in pixels" },
+        "primaryColor": { "type": "string", "description": "HEX color" },
+        "secondaryColor": { "type": "string" },
+        "fontSans": { "type": "string" },
+        "fontSerif": { "type": "string" },
+        "navbarBg": { "type": "string" }
+      }
+    },
+    "User": {
+      "title": "User",
+      "description": "A user of the application",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "pseudonym": { "type": "string", "description": "Bút danh cho Editor" },
+        "role": { "type": "string", "enum": ["super_admin", "editor", "reader"] },
+        "createdAt": { "type": "number", "description": "Timestamp" },
+        "readingPreferences": {
+          "type": "object",
+          "properties": {
+            "fontSize": { "type": "number" },
+            "fontFamily": { "type": "string" }
+          }
+        }
+      },
+      "required": ["email", "role", "createdAt"]
+    },
+    "ReadingProgress": {
+      "title": "Reading Progress",
+      "description": "Last read chapter for a story",
+      "type": "object",
+      "properties": {
+        "storyId": { "type": "string" },
+        "chapterId": { "type": "string" },
+        "chapterNumber": { "type": "number" },
+        "title": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      }
+    },
+    "Favorite": {
+      "title": "Favorite",
+      "description": "Stories marked as favorite",
+      "type": "object",
+      "properties": {
+        "storyId": { "type": "string" },
+        "storyTitle": { "type": "string" },
+        "storyCover": { "type": "string" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "ReadingHistory": {
+      "title": "Reading History",
+      "description": "Record of a chapter being read",
+      "type": "object",
+      "properties": {
+        "storyId": { "type": "string" },
+        "storyTitle": { "type": "string" },
+        "chapterId": { "type": "string" },
+        "chapterNumber": { "type": "number" },
+        "viewedAt": { "type": "number" }
+      }
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "App notification",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "link": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "ActivityLog": {
+      "title": "Activity Log",
+      "description": "Logs for admin actions",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "number" }
+      }
+    },
+    "Story": {
+      "title": "Story",
+      "description": "A novel/story",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "author": { "type": "string" },
+        "editor": { "type": "string" },
+        "synopsis": { "type": "string" },
+        "coverUrl": { "type": "string" },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["Đang ra", "Hoàn thành", "Tạm dừng"] },
+        "chapterCount": { "type": "number" },
+        "views": { "type": "number" },
+        "rating": { "type": "number" },
+        "ratingCount": { "type": "number" },
+        "uploaderId": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["title", "author", "synopsis", "status", "createdAt", "updatedAt"]
+    },
+    "Chapter": {
+      "title": "Chapter",
+      "description": "A chapter of a story",
+      "type": "object",
+      "properties": {
+        "storyId": { "type": "string" },
+        "chapterNumber": { "type": "number" },
+        "title": { "type": "string" },
+        "content": { "type": "array", "items": { "type": "string" } },
+        "isLocked": { "type": "boolean" },
+        "shopeeLink": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["storyId", "chapterNumber", "content", "isLocked", "createdAt", "updatedAt"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "A comment on a story",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userDisplayName": { "type": "string" },
+        "userPhotoURL": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["userId", "content", "createdAt"]
+    },
+    "Vote": {
+      "title": "Vote",
+      "description": "A user casting a vote for a story",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["userId", "createdAt"]
+    },
+    "LegalPage": {
+      "title": "Legal Page",
+      "description": "Content for legal pages like Privacy Policy and Terms of Use",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "fontFamily": { "type": "string" },
+        "textColor": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["title", "content", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "settings/general": {
+      "schema": { "$ref": "#/entities/SiteSettings" },
+      "description": "General site configuration"
+    },
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "users/{userId}/reading_progress/{storyId}": {
+      "schema": { "$ref": "#/entities/ReadingProgress" },
+      "description": "User's current progress in a story"
+    },
+    "users/{userId}/favorites/{storyId}": {
+      "schema": { "$ref": "#/entities/Favorite" },
+      "description": "User's favorite stories"
+    },
+    "users/{userId}/reading_history/{historyId}": {
+      "schema": { "$ref": "#/entities/ReadingHistory" },
+      "description": "User's reading history"
+    },
+    "notifications/{notifId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "System and story notifications"
+    },
+    "activity_logs/{logId}": {
+      "schema": { "$ref": "#/entities/ActivityLog" },
+      "description": "Admin activity logs"
+    },
+    "stories/{storyId}": {
+      "schema": { "$ref": "#/entities/Story" },
+      "description": "Stories"
+    },
+    "stories/{storyId}/chapters/{chapterId}": {
+      "schema": { "$ref": "#/entities/Chapter" },
+      "description": "Chapters for a specific story"
+    },
+    "stories/{storyId}/comments/{commentId}": {
+      "schema": { "$ref": "#/entities/Comment" },
+      "description": "Comments left by users on a story"
+    },
+    "stories/{storyId}/votes/{voteId}": {
+      "schema": { "$ref": "#/entities/Vote" },
+      "description": "Votes casted by users on a story"
+    },
+    "legal_pages/{pageId}": {
+      "schema": { "$ref": "#/entities/LegalPage" },
+      "description": "Legal pages content"
+    }
+  }
+}

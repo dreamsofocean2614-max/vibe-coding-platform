@@ -1,0 +1,168 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global helpers
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return isSignedIn(); } // In sandbox, email_verified is often not available or reliable
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() { 
+      return isSignedIn() && (
+        request.auth.token.email == "dreamsofocean2614@gmail.com" || 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'reader') == "super_admin")
+      ); 
+    }
+    
+    function isEditor() {
+      return isSignedIn() && (
+        isSuperAdmin() || 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'reader') == "editor")
+      );
+    }
+
+    function isAdmin() {
+      return isSuperAdmin();
+    }
+
+    function isReader() {
+      return isSignedIn();
+    }
+
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // Users
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'role', 'createdAt']) &&
+             data.email is string && data.email.size() <= 256 &&
+             data.role in ['super_admin', 'editor', 'reader'] &&
+             (data.createdAt is timestamp || data.createdAt is number);
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow list: if isSuperAdmin();
+      allow create: if isSignedIn() && isValidId(userId) && request.auth.uid == userId && 
+                    isValidUser(incoming()) && (
+                      incoming().role == 'reader' || request.auth.token.email == "dreamsofocean2614@gmail.com"
+                    );
+      allow update: if isSignedIn() && isValidId(userId) && (
+        isSuperAdmin() ||
+        (request.auth.uid == userId && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'email', 'pseudonym', 'readingPreferences', 'updatedAt', 'lastLoginAt'])) ||
+        (isSuperAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['role']))
+      );
+
+      // Sub-collections for User
+      match /reading_progress/{storyId} {
+        allow read, write: if request.auth.uid == userId;
+      }
+      match /favorites/{storyId} {
+        allow read, write: if request.auth.uid == userId;
+      }
+      match /reading_history/{historyId} {
+        allow read, write: if request.auth.uid == userId;
+      }
+    }
+
+    // Activity Logs
+    match /activity_logs/{logId} {
+      allow read, list: if isSuperAdmin();
+      allow create: if isEditor() && isValidId(logId);
+    }
+
+    // Notifications
+    match /notifications/{notifId} {
+      allow read, list: if isSignedIn() && existing().userId == request.auth.uid;
+      allow update: if isSignedIn() && existing().userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['isRead']);
+      allow create: if isEditor() && isValidId(notifId); 
+    }
+
+    // Settings
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // Connection Test
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Legal Pages
+    match /legal_pages/{pageId} {
+      allow read, list: if true;
+      allow write: if isAdmin();
+    }
+
+    // Stories
+    function isValidStory(data) {
+      return data.keys().hasAll(['title', 'author', 'synopsis', 'status', 'createdAt', 'updatedAt']) &&
+             data.title is string && data.title.size() <= 200 && data.title.size() > 0 &&
+             data.author is string && data.author.size() <= 100 &&
+             data.synopsis is string && data.synopsis.size() <= 50000 &&
+             data.status in ['Đang ra', 'Hoàn thành', 'Tạm dừng'] &&
+             (data.createdAt is timestamp || data.createdAt is number) &&
+             (data.updatedAt is timestamp || data.updatedAt is number);
+    }
+
+    match /stories/{storyId} {
+      allow read, list: if true;
+      allow create: if isEditor() && isValidId(storyId) && isValidStory(incoming()) && (incoming().get('uploaderId', null) == request.auth.uid || isSuperAdmin());
+      allow update: if (isValidId(storyId) && (
+        isSuperAdmin() || 
+        (isEditor() && existing().get('uploaderId', null) == request.auth.uid) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['views', 'updatedAt', 'rating', 'ratingCount', 'chapterCount', 'categories', 'isHidden', 'bannerUrl', 'bannerDarkUrl', 'bannerText', 'bannerHeight']) && (incoming().updatedAt is timestamp || incoming().updatedAt is number))
+      ));
+      allow delete: if isSuperAdmin() || (isEditor() && existing().get('uploaderId', null) == request.auth.uid);
+
+      // Chapters
+      function isValidChapter(data) {
+        return data.keys().hasAll(['storyId', 'chapterNumber', 'content', 'isLocked']) &&
+               data.storyId == storyId &&
+               data.chapterNumber is number &&
+               data.content is list && data.content.size() <= 10000 &&
+               data.isLocked is bool;
+      }
+
+      match /chapters/{chapterId} {
+        allow read, list: if true;
+        allow create, update, delete: if isValidId(chapterId) && (
+          isSuperAdmin() || 
+          (isEditor() && get(/databases/$(database)/documents/stories/$(storyId)).data.get('uploaderId', null) == request.auth.uid)
+        );
+      }
+      
+      // Comments
+      function isValidComment(data) {
+        return data.keys().hasAll(['userId', 'content', 'createdAt']) &&
+               data.userId == request.auth.uid &&
+               data.content is string && data.content.size() <= 2000 &&
+               (data.createdAt is timestamp || data.createdAt is number);
+      }
+
+      match /comments/{commentId} {
+        allow read, list: if true;
+        allow create: if isSignedIn() && isValidId(commentId) && isValidComment(incoming());
+        allow delete: if isSuperAdmin() || (isSignedIn() && existing().userId == request.auth.uid) || (isEditor() && get(/databases/$(database)/documents/stories/$(storyId)).data.get('uploaderId', null) == request.auth.uid);
+      }
+
+      // Votes
+      match /votes/{voteId} {
+        allow read, list: if true;
+        allow create, update: if isSignedIn() && isValidId(voteId) && voteId == request.auth.uid;
+        allow delete: if isSignedIn() && existing().get('userId', '') == request.auth.uid;
+      }
+    }
+  }
+}
